@@ -1,5 +1,6 @@
 import { groupBy } from 'lodash';
 import React, { FC, ReactElement } from 'react';
+
 import Message from './message';
 import QueryResultTable from './query-result-table';
 
@@ -11,13 +12,11 @@ interface Props {
   queryIndex: number;
   totalQueries: number;
   command: string;
-  isMultipleResults: boolean;
-  widthOffset: number;
-  heightOffset: number;
   onCopyToClipboardClick: (rows, type: string, delimiter?: string) => void;
   onSaveToFileClick: (rows, type: string, delimiter?: string) => void;
   copied: boolean | null;
   saved: boolean | null;
+  executionTime: number | null;
 }
 
 const QueryResult: FC<Props> = ({
@@ -28,23 +27,22 @@ const QueryResult: FC<Props> = ({
   queryIndex,
   totalQueries,
   command,
-  isMultipleResults,
-  widthOffset,
-  heightOffset,
   onCopyToClipboardClick,
   onSaveToFileClick,
   copied,
   saved,
+  executionTime,
 }) => {
   const isSelect = command === 'SELECT';
   const isExplain = command === 'EXPLAIN';
   const isUnknown = command === 'UNKNOWN';
+  const msgTime = executionTime != null ? ` Took ${(executionTime / 1000).toFixed(3)}s.` : '';
   if (!isSelect && !isExplain && !isUnknown) {
     const msgAffectedRows = affectedRows ? `Affected rows: ${affectedRows}.` : '';
     return (
       <Message
         key={`msgAffectedRows-${queryIndex}`}
-        message={`Query executed successfully. ${msgAffectedRows}`}
+        message={`Query executed successfully. ${msgAffectedRows}${msgTime}`}
         type="success"
       />
     );
@@ -62,13 +60,11 @@ const QueryResult: FC<Props> = ({
     );
   }
 
-  // Not sure what type of query they ran, but cannot render table, print
-  // generic message.
   if (fields.length === 0) {
     return (
       <Message
         key={`genericResult-${queryIndex}`}
-        message={`Query executed successfully.`}
+        message={`Query executed successfully.${msgTime}`}
         type="success"
       />
     );
@@ -93,16 +89,9 @@ const QueryResult: FC<Props> = ({
     );
   }
 
-  let adjustedWidthOffset = widthOffset;
-  if (isMultipleResults) {
-    adjustedWidthOffset += 30; // padding of the query result box
-  }
-
   const tableResult = (
     <QueryResultTable
       key={queryIndex}
-      widthOffset={adjustedWidthOffset}
-      heightOffset={heightOffset}
       copied={copied}
       saved={saved}
       fields={fields}
@@ -110,14 +99,15 @@ const QueryResult: FC<Props> = ({
       rowCount={rowCount}
       onSaveToFileClick={onSaveToFileClick}
       onCopyToClipboardClick={onCopyToClipboardClick}
+      executionTime={executionTime}
     />
   );
 
   if (totalQueries === 1) {
     return (
-      <div key={queryIndex}>
-        {msgDuplicatedColumns}
-        {tableResult}
+      <div key={queryIndex} className="flex h-full flex-col">
+        {msgDuplicatedColumns && <div className="shrink-0">{msgDuplicatedColumns}</div>}
+        <div className="min-h-0 flex-1">{tableResult}</div>
       </div>
     );
   }

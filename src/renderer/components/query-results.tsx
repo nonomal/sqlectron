@@ -1,11 +1,10 @@
-import React, { FC } from 'react';
+import React, { FC, useEffect, useState } from 'react';
+
 import Loader from './loader';
 import Message from './message';
 import QueryResult from './query-result';
 
 interface Props {
-  widthOffset: number;
-  heightOffset: number;
   onCopyToClipboardClick: (rows, type: string, delimiter?: string) => void;
   onSaveToFileClick: (rows, type: string, delimiter?: string) => void;
   copied: boolean | null;
@@ -22,11 +21,11 @@ interface Props {
     | null;
   isExecuting: boolean;
   error: Error | null;
+  executionStartTime: number | null;
+  executionTime: number | null;
 }
 
 const QueryResults: FC<Props> = ({
-  widthOffset,
-  heightOffset,
   onCopyToClipboardClick,
   onSaveToFileClick,
   copied,
@@ -34,7 +33,21 @@ const QueryResults: FC<Props> = ({
   results,
   isExecuting,
   error,
+  executionStartTime,
+  executionTime,
 }) => {
+  const [elapsed, setElapsed] = useState<number>(0);
+
+  useEffect(() => {
+    if (!isExecuting || executionStartTime == null) {
+      return;
+    }
+    const interval = setInterval(() => {
+      setElapsed(Date.now() - executionStartTime);
+    }, 100);
+    return () => clearInterval(interval);
+  }, [isExecuting, executionStartTime]);
+
   if (error) {
     if (error.message) {
       const errorBody = Object.keys(error)
@@ -50,7 +63,7 @@ const QueryResults: FC<Props> = ({
   if (isExecuting) {
     return (
       <div className="relative min-h-[250px]">
-        <Loader message="Loading" type="active" inverted />
+        <Loader message={`Loading (${(elapsed / 1000).toFixed(1)}s)`} type="active" inverted />
       </div>
     );
   }
@@ -61,20 +74,18 @@ const QueryResults: FC<Props> = ({
 
   const totalQueries = results.length;
   return (
-    <div id="query-result">
+    <div id="query-result" className={totalQueries === 1 ? 'h-full' : undefined}>
       {results.map((result, idx) => (
         <QueryResult
           {...result}
           totalQueries={totalQueries}
           queryIndex={idx}
-          isMultipleResults={results.length > 1}
           key={idx}
-          widthOffset={widthOffset}
-          heightOffset={heightOffset}
           copied={copied}
           saved={saved}
           onSaveToFileClick={onSaveToFileClick}
           onCopyToClipboardClick={onCopyToClipboardClick}
+          executionTime={idx === 0 ? executionTime : null}
         />
       ))}
     </div>

@@ -1,4 +1,5 @@
-import { Action, Reducer } from 'redux';
+import { Action, AnyAction, Reducer } from 'redux';
+
 import * as connTypes from '../actions/connections';
 import * as dbTypes from '../actions/databases';
 import * as types from '../actions/indexes';
@@ -36,7 +37,7 @@ const INITIAL_STATE: IndexState = {
   error: null,
 };
 
-const indexReducer: Reducer<IndexState> = function (
+const indexReducer: Reducer<IndexState, AnyAction> = function (
   state: IndexState = INITIAL_STATE,
   action,
 ): IndexState {

@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import { servers } from '../../src/browser/core';
-import { readJSONFile } from '../../src/browser/core/utils';
 import * as crypto from '../../src/browser/core/crypto';
-import { Server } from '../../src/common/types/server';
-import utilsStub from './utils-stub';
+import { readJSONFile } from '../../src/browser/core/utils';
 import { Config } from '../../src/common/types/config';
+import { Server } from '../../src/common/types/server';
+
+import utilsStub from './utils-stub';
 
 const cryptoSecret = 'CHK`Ya91Hs{me!^8ndwPPaPPxwQ}`';
 
@@ -137,31 +138,6 @@ describe('servers', () => {
 
       const configAfter = await loadConfig();
       expect(configAfter.servers.length).toEqual(configBefore.servers.length);
-      const configServer = configAfter.servers.find((srv) => srv.id === id);
-      assertServers(serverToUpdate, configServer);
-    });
-
-    it('should upgrade oldstyle encrypted password', async () => {
-      const id = '65f36ca9-331f-43b3-ab38-3f5556fd65ce';
-      const configBefore = await loadConfig();
-      const serverToUpdate: Server = {
-        id,
-        name: 'mysql-vm',
-        client: 'mysql',
-        ssl: false,
-        host: '10.10.10.10',
-        port: 3306,
-        database: 'mydb',
-        user: 'usr',
-        password: 'fa1d88ee82bd4439',
-      };
-      const { data: updatedServer } = await servers.update(serverToUpdate, cryptoSecret);
-      serverToUpdate.password = 'password';
-      assertServers(serverToUpdate, updatedServer);
-
-      const configAfter = await loadConfig();
-      expect(configAfter.servers.length).toEqual(configBefore.servers.length);
-
       const configServer = configAfter.servers.find((srv) => srv.id === id);
       assertServers(serverToUpdate, configServer);
     });
@@ -311,7 +287,7 @@ describe('servers', () => {
       expect(decryptedServer).toEqual(encryptedServer);
     });
 
-    it('should decrypt old style password', () => {
+    it('should throw when trying to decrypt old style password', () => {
       const encryptedServer: Server = {
         id: '',
         name: 'mysql-vm',
@@ -324,14 +300,10 @@ describe('servers', () => {
         encrypted: true,
         password: 'fa1d88ee82bd4439',
       };
-      const decryptedServer = servers.decryptSecrects(encryptedServer, cryptoSecret);
-
-      encryptedServer.encrypted = false;
-      encryptedServer.password = 'password';
-      expect(decryptedServer).toEqual(encryptedServer);
+      expect(() => servers.decryptSecrects(encryptedServer, cryptoSecret)).toThrow();
     });
 
-    it('should decrypt old style password for ssh', () => {
+    it('should throw when trying to decrypt old style password for ssh', () => {
       const encryptedServer: Server = {
         id: '',
         name: 'mysql-vm',
@@ -353,12 +325,7 @@ describe('servers', () => {
           password: 'fa1d88ee82bd4439',
         },
       };
-      const decryptedServer = servers.decryptSecrects(encryptedServer, cryptoSecret);
-
-      encryptedServer.encrypted = false;
-      encryptedServer.password = 'password';
-      encryptedServer.ssh!.password = 'password';
-      expect(decryptedServer).toEqual(encryptedServer);
+      expect(() => servers.decryptSecrects(encryptedServer, cryptoSecret)).toThrow();
     });
 
     it('should do nothing for unencrypted server', () => {

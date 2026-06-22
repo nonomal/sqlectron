@@ -1,24 +1,24 @@
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import React, { FC, RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { TabPanel, Tabs } from 'react-tabs';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+
+import * as QueryActions from '../actions/queries';
+import { DB_CLIENTS } from '../api';
+import { useAppDispatch, useAppSelector } from '../hooks/redux';
 
 import Query from './query';
+import QueryTab from './query-tab';
 import TabList from './tab-list';
 import { Button } from './ui/button';
 
-import * as QueryActions from '../actions/queries';
-import { useAppDispatch, useAppSelector } from '../hooks/redux';
-import QueryTab from './query-tab';
-import { DB_CLIENTS } from '../api';
-
 interface Props {
-  sideBarWidth: number;
   queryRefs: Record<number, RefObject<HTMLDivElement>>;
 }
 
-const QueryTabs: FC<Props> = ({ sideBarWidth, queryRefs }) => {
+const QueryTabs: FC<Props> = ({ queryRefs }) => {
   const dispatch = useAppDispatch();
-  const { connections, queries } = useAppSelector((state) => state);
+  const connections = useAppSelector((state) => state.connections);
+  const queries = useAppSelector((state) => state.queries);
 
   const [tabNavPosition, setTabNavPosition] = useState(0);
 
@@ -141,14 +141,13 @@ const QueryTabs: FC<Props> = ({ sideBarWidth, queryRefs }) => {
     const query = queries.queriesById[queryId];
 
     return (
-      <TabPanel key={queryId} className="react-tabs__tab-panel">
+      <TabPanel key={queryId} className="react-tabs__tab-panel min-h-0 flex-1">
         <Query
           editorName={`querybox${queryId}`}
           client={server.client}
           allowCancel={allowCancel}
           query={query}
           queryRef={queryRefs[queryId]}
-          widthOffset={sideBarWidth}
           onExecQueryClick={handleExecuteQuery}
           onCancelQueryClick={handleCancelQuery}
           onCopyToClipboardClick={copyToClipboard}
@@ -162,11 +161,12 @@ const QueryTabs: FC<Props> = ({ sideBarWidth, queryRefs }) => {
 
   return (
     <Tabs
-      className="react-tabs"
+      className="react-tabs flex h-full flex-col"
       onSelect={handleSelectTab}
       selectedIndex={selectedIndex}
-      forceRenderTabPanel>
-      <div className="flex items-center border-b border-slate-200">
+      forceRenderTabPanel
+    >
+      <div className="flex shrink-0 items-center">
         {isTabsFitOnScreen && (
           <Button
             variant="outline"
@@ -176,7 +176,8 @@ const QueryTabs: FC<Props> = ({ sideBarWidth, queryRefs }) => {
             onClick={() => {
               const position = tabNavPosition + 100;
               setTabNavPosition(position > 0 ? 0 : position);
-            }}>
+            }}
+          >
             <ChevronLeft className="h-4 w-4" />
           </Button>
         )}
@@ -184,7 +185,8 @@ const QueryTabs: FC<Props> = ({ sideBarWidth, queryRefs }) => {
           <TabList
             ref={tabListRef}
             className="react-tabs__tab-list flex"
-            style={{ left: `${tabNavPosition}px`, transition: 'left 0.2s linear' }}>
+            style={{ left: `${tabNavPosition}px`, transition: 'left 0.2s linear' }}
+          >
             {tabs}
           </TabList>
         </div>
@@ -192,7 +194,8 @@ const QueryTabs: FC<Props> = ({ sideBarWidth, queryRefs }) => {
           variant="outline"
           size="sm"
           className="h-7 shrink-0 rounded-none border-y-0 border-r-0 px-2"
-          onClick={() => newTab()}>
+          onClick={() => newTab()}
+        >
           <Plus className="h-4 w-4" />
         </Button>
         {isTabsFitOnScreen && (
@@ -203,7 +206,8 @@ const QueryTabs: FC<Props> = ({ sideBarWidth, queryRefs }) => {
             disabled={tabListTotalWidthChildren < tabListTotalWidth || isOnMaxPosition}
             onClick={() => {
               setTabNavPosition(tabNavPosition - 100);
-            }}>
+            }}
+          >
             <ChevronRight className="h-4 w-4" />
           </Button>
         )}

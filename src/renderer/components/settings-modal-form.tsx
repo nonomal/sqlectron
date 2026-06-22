@@ -1,14 +1,15 @@
-import React, { ChangeEvent, FC, MouseEvent, useCallback, useState } from 'react';
 import { cloneDeep, set } from 'lodash';
-import Select from 'react-select';
 import { AlertTriangle, Bug, CircleX, Info } from 'lucide-react';
+import React, { ChangeEvent, FC, MouseEvent, useCallback, useState } from 'react';
+import Select from 'react-select';
 
+import type { BaseConfig, Config } from '../../common/types/config';
 import { sqlectron } from '../api';
 import { cn } from '../lib/utils';
-import Checkbox from './checkbox';
-import { mapObjectToConfig } from '../utils/config';
-import type { BaseConfig, Config } from '../../common/types/config';
 import { ConfigState } from '../reducers/config';
+import { mapObjectToConfig } from '../utils/config';
+
+import Checkbox from './checkbox';
 import { Button, buttonVariants } from './ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
 import { Input } from './ui/input';
@@ -53,7 +54,7 @@ const SettingsModalForm: FC<Props> = ({ onSaveClick, onCancelClick, config }) =>
       }
       const newState = cloneDeep(configState || {}) as Config;
       const { target } = event;
-      const value = target.files ? target.files[0].path : target.value;
+      const value = target.files ? sqlectron.browser.getPathForFile(target.files[0]) : target.value;
       const name = target.name.replace(/^file\./, '');
       const [name1, name2] = name.split('.');
 
@@ -307,7 +308,8 @@ const SettingsModalForm: FC<Props> = ({ onSaveClick, onCancelClick, config }) =>
                     className={cn(
                       buttonVariants({ variant: 'outline', size: 'sm' }),
                       'cursor-pointer',
-                    )}>
+                    )}
+                  >
                     Browse
                     <input
                       type="file"

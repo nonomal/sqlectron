@@ -1,8 +1,9 @@
-import { Action, Reducer } from 'redux';
-import * as connTypes from '../actions/connections';
-import * as types from '../actions/views';
-import * as dbTypes from '../actions/databases';
+import { Action, AnyAction, Reducer } from 'redux';
+
 import { DbTable } from '../../common/types/database';
+import * as connTypes from '../actions/connections';
+import * as dbTypes from '../actions/databases';
+import * as types from '../actions/views';
 
 export interface ViewAction extends Action {
   type: string;
@@ -28,7 +29,7 @@ const INITIAL_STATE: ViewState = {
   viewsByDatabase: {},
 };
 
-const viewReducer: Reducer<ViewState> = function (
+const viewReducer: Reducer<ViewState, AnyAction> = function (
   state: ViewState = INITIAL_STATE,
   action,
 ): ViewState {

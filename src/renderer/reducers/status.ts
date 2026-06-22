@@ -1,7 +1,8 @@
-import { Action, Reducer } from 'redux';
+import { Action, AnyAction, Reducer } from 'redux';
+
 import * as connTypes from '../actions/connections';
-import * as tablesTypes from '../actions/tables';
 import * as queriesTypes from '../actions/queries';
+import * as tablesTypes from '../actions/tables';
 
 export interface StatusAction extends Action {
   type: string;
@@ -10,7 +11,7 @@ export interface StatusAction extends Action {
 
 const INITIAL_STATE = '';
 
-const statusReducer: Reducer<string> = function (_, action) {
+const statusReducer: Reducer<string, AnyAction> = function (_, action) {
   switch (action.type) {
     case connTypes.CONNECTION_REQUEST:
       return 'Connecting to database...';

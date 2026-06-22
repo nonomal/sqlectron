@@ -1,9 +1,10 @@
 import { configureStore, Middleware } from '@reduxjs/toolkit';
 import { createLogger as createReduxLogger } from 'redux-logger';
-import rootReducer from '../reducers';
-import { sqlectron, CONFIG } from '../api';
 
-const middlewares: Middleware[] = [];
+import { sqlectron, CONFIG } from '../api';
+import rootReducer, { ApplicationState } from '../reducers';
+
+const middlewares: Middleware<object, ApplicationState>[] = [];
 
 const isLogConsoleEnabled = CONFIG.log.console;
 const isLogFileEnabled = CONFIG.log.file;
@@ -18,7 +19,6 @@ if (isLogConsoleEnabled || isLogFileEnabled) {
   for (const method in console) {
     // eslint-disable-next-line no-console
     if (typeof console[method] === 'function') {
-      // eslint-disable-line no-console
       loggerConfig.logger[method] = function levelFn(...args) {
         if (isLogConsoleEnabled) {
           const m = method === 'debug' ? 'log' : method;
@@ -39,7 +39,9 @@ if (isLogConsoleEnabled || isLogFileEnabled) {
     }
   }
 
-  middlewares.push(createReduxLogger(loggerConfig));
+  middlewares.push(
+    createReduxLogger(loggerConfig) as unknown as Middleware<object, ApplicationState>,
+  );
 }
 
 export const store = configureStore({
@@ -51,7 +53,7 @@ export const store = configureStore({
 if (module.hot) {
   module.hot.accept(
     '../reducers',
-    // eslint-disable-next-line global-require, @typescript-eslint/no-require-imports
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     () => store.replaceReducer(require('../reducers')),
   );
 }

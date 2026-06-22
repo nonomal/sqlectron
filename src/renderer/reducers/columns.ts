@@ -1,7 +1,8 @@
-import { Action, Reducer } from 'redux';
+import { Action, AnyAction, Reducer } from 'redux';
+
+import * as types from '../actions/columns';
 import * as connTypes from '../actions/connections';
 import * as dbTypes from '../actions/databases';
-import * as types from '../actions/columns';
 
 export interface Column {
   name: string;
@@ -41,7 +42,7 @@ const INITIAL_STATE: ColumnState = {
   columnsByTable: {},
 };
 
-const columnReducer: Reducer<ColumnState> = function (
+const columnReducer: Reducer<ColumnState, AnyAction> = function (
   state: ColumnState = INITIAL_STATE,
   action,
 ): ColumnState {

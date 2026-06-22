@@ -1,4 +1,5 @@
-import { Action, Reducer } from 'redux';
+import { Action, AnyAction, Reducer } from 'redux';
+
 import * as connTypes from '../actions/connections';
 import * as dbTypes from '../actions/databases';
 import * as types from '../actions/triggers';
@@ -36,7 +37,7 @@ const INITIAL_STATE: TriggerState = {
   triggersByTable: {},
 };
 
-const triggerReducer: Reducer<TriggerState> = function (
+const triggerReducer: Reducer<TriggerState, AnyAction> = function (
   state: TriggerState = INITIAL_STATE,
   action,
 ): TriggerState {

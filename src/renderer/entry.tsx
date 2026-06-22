@@ -1,13 +1,20 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
+import type { Root } from 'react-dom/client';
+
+import RootContainer from './containers/root';
 import { store } from './store/configure';
-import Root from './containers/root';
+
+let appRoot: Root;
 
 const doRender = (NextRoot) => {
-  ReactDOM.render(<NextRoot store={store} />, document.getElementById('content'));
+  if (!appRoot) {
+    appRoot = createRoot(document.getElementById('content')!);
+  }
+  appRoot.render(<NextRoot store={store} />);
 };
 
-doRender(Root);
+doRender(RootContainer);
 
 if (module.hot) {
   module.hot.accept('./containers/root.tsx', () => {

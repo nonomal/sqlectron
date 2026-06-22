@@ -1,8 +1,9 @@
-import { AnyAction } from 'redux';
-import { sqlectron, DB_CLIENTS } from '../api';
-import { Server } from '../../common/types/server';
-import { ApplicationState, ThunkResult } from '../reducers';
 import { cloneDeep } from 'lodash';
+import { AnyAction } from 'redux';
+
+import { Server } from '../../common/types/server';
+import { sqlectron, DB_CLIENTS } from '../api';
+import { ApplicationState, ThunkResult } from '../reducers';
 
 export const CLOSE_CONNECTION = 'CLOSE_CONNECTION';
 export const CONNECTION_REQUEST = 'CONNECTION_REQUEST';
@@ -42,6 +43,7 @@ export function connect(
     let server;
     let database;
     let defaultDatabase;
+    const wasAlreadyConnected = isConnected;
 
     try {
       if (reconnecting) {
@@ -95,7 +97,9 @@ export function connect(
         clonedServer,
         database,
         config,
-        reconnecting,
+        // If the server was already connected and no explicit database was requested,
+        // this is a re-mount (e.g., HMR) — treat as reconnect to avoid spurious new query tabs.
+        reconnecting: reconnecting || (wasAlreadyConnected && !databaseName),
       });
     } catch (error) {
       dispatch({

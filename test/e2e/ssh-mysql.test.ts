@@ -5,6 +5,7 @@ import path from 'path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { ConfigFile } from '../../src/common/types/config';
+
 import helper from './helper';
 
 const BASE_PATH = path.join(__dirname, '../fixtures/ssh-mysql');
@@ -85,7 +86,7 @@ describeFunc('SSH MySQL', function () {
     // Set default query and automatically executes it
     await helper.expectToEqualText(
       mainWindow,
-      '.react-tabs__tab-panel--selected .ace_content',
+      '.react-tabs__tab-panel--selected #querybox1 [contenteditable="true"]',
       'SELECT * FROM `roles` LIMIT 101',
     );
 
